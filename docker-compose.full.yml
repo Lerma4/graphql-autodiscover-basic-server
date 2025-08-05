@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: graphql-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: test
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - graphql-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  graphql-app:
+    build: .
+    container_name: graphql-autodiscovery
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: test
+      DB_USER: user
+      DB_PASSWORD: password
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - graphql-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  graphql-network:
+    driver: bridge

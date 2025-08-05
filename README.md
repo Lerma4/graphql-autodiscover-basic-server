@@ -1,106 +1,102 @@
 # GraphQL Basic Server
 
-Un server GraphQL con Node.js che si collega a un database MySQL.
+A GraphQL server with Node.js that connects to a MySQL database.
 
-## Prerequisiti
+## Prerequisites
 
-- Node.js (versione 14 o superiore)
-- Docker e Docker Compose
-- MySQL client (opzionale, per eseguire script SQL)
+- Node.js (version 14 or higher)
+- Docker and Docker Compose
+- MySQL client (optional, for running SQL scripts)
 
-## Configurazione
+## Setup
 
-### 1. Avviare il database MySQL
+### 1. Database Configuration
 
-Crea un file `docker-compose.yml` con il contenuto fornito e avvia il database:
+Ensure you have a MySQL database configured and running.
 
-```bash
-docker-compose up -d
-```
-
-### 2. Installare le dipendenze
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Avviare il server
+### 3. Start the Server
 
-#### Server con schema manuale:
+#### Manual Schema Server:
 ```bash
-# Modalità produzione
+# Production mode
 npm start
 
-# Modalità sviluppo (con auto-reload)
+# Development mode (with auto-reload)
 npm run dev
 ```
 
-#### Server con auto-discovery (NUOVO!):
+#### Auto-Discovery Server (NEW!):
 ```bash
-# Modalità produzione con auto-discovery
+# Production mode with auto-discovery
 npm run start:auto
 
-# Modalità sviluppo con auto-discovery (con auto-reload)
+# Development mode with auto-discovery (with auto-reload)
 npm run dev:auto
 ```
 
-#### Utilizzo con Docker:
+#### Using Docker:
 ```bash
-# Costruire l'immagine Docker
+# Build the Docker image
 docker build -t graphql-autodiscovery .
 
-# Eseguire il container (assicurati che il database MySQL sia in esecuzione)
+# Run the container (ensure MySQL database is running)
 docker run -p 4000:4000 --env-file .env graphql-autodiscovery
 
-# Oppure, se usi docker-compose per il database, puoi collegare i container:
+# Or, if using docker-compose for database, connect containers:
 docker run -p 4000:4000 --network graph-ql-basic-server_default --env-file .env graphql-autodiscovery
 ```
 
-#### Stack completo con Docker Compose:
+#### Complete Stack with Docker Compose:
 ```bash
-# Avviare l'intero stack (database + applicazione GraphQL)
+# Start the entire stack (database + GraphQL application)
 docker-compose -f docker-compose.full.yml up -d
 
-# Visualizzare i log
+# View logs
 docker-compose -f docker-compose.full.yml logs -f
 
-# Fermare lo stack
+# Stop the stack
 docker-compose -f docker-compose.full.yml down
 ```
 
-## Utilizzo
+## Usage
 
-Il server GraphQL sarà disponibile su:
-- **Endpoint GraphQL**: http://localhost:4000/graphql
+The GraphQL server will be available at:
+- **GraphQL Endpoint**: http://localhost:4000/graphql
 - **GraphQL Playground**: http://localhost:4000/graphql
 
-## Auto-Discovery delle Tabelle
+## Table Auto-Discovery
 
-La nuova funzionalità di auto-discovery permette di generare automaticamente lo schema GraphQL e i resolver basandosi sulla struttura del database MySQL.
+The new auto-discovery feature automatically generates GraphQL schema and resolvers based on the MySQL database structure.
 
-### Come funziona:
-1. **Scansione automatica**: Il sistema interroga `INFORMATION_SCHEMA` per scoprire tutte le tabelle nel database
-2. **Generazione tipi**: Crea automaticamente i tipi GraphQL basati sui campi delle tabelle
-3. **Mapping tipi**: Converte i tipi SQL in tipi GraphQL appropriati (INT → Int, VARCHAR → String, etc.)
-4. **Resolver automatici**: Genera query e mutation CRUD per ogni tabella
-5. **Convenzioni di naming**: Usa convenzioni standard (tabelle al plurale, singolare per query specifiche)
+### How it works:
+1. **Automatic scanning**: The system queries `INFORMATION_SCHEMA` to discover all tables in the database
+2. **Type generation**: Automatically creates GraphQL types based on table fields
+3. **Type mapping**: Converts SQL types to appropriate GraphQL types (INT → Int, VARCHAR → String, etc.)
+4. **Automatic resolvers**: Generates CRUD queries and mutations for each table
+5. **Naming conventions**: Uses standard conventions (plural tables, singular for specific queries)
 
-### Vantaggi:
-- ✅ **Zero configurazione**: Non serve scrivere schema o resolver manualmente
-- ✅ **Sincronizzazione automatica**: Lo schema si aggiorna automaticamente quando cambia il database
-- ✅ **Supporto completo CRUD**: Query, create, update, delete per ogni tabella
-- ✅ **Gestione relazioni**: Riconosce chiavi primarie e foreign key
-- ✅ **Tipi corretti**: Mapping intelligente dei tipi SQL → GraphQL
+### Advantages:
+- ✅ **Zero configuration**: No need to manually write schema or resolvers
+- ✅ **Automatic synchronization**: Schema updates automatically when database changes
+- ✅ **Complete CRUD support**: Query, create, update, delete for every table
+- ✅ **Relationship management**: Recognizes primary and foreign keys
+- ✅ **Correct types**: Intelligent SQL → GraphQL type mapping
 
-### Limitazioni:
-- Le relazioni tra tabelle non sono ancora supportate automaticamente
-- I nomi delle query seguono convenzioni standard (potrebbero non essere ideali per tutti i casi)
-- Non supporta logica di business complessa (per quella serve il server manuale)
+### Limitations:
+- Relationships between tables are not yet automatically supported
+- Query names follow standard conventions (might not be ideal for all cases)
+- Does not support complex business logic (use manual server for that)
 
-### Query di esempio
+### Example Queries
 
 ```graphql
-# Ottenere tutti gli utenti
+# Get all users
 query {
   users {
     id
@@ -110,7 +106,7 @@ query {
   }
 }
 
-# Ottenere un utente specifico
+# Get a specific user
 query {
   user(id: "1") {
     id
@@ -120,9 +116,9 @@ query {
   }
 }
 
-# Creare un nuovo utente
+# Create a new user
 mutation {
-  createUser(name: "Nuovo Utente", email: "nuovo@email.com") {
+  createUser(name: "New User", email: "new@email.com") {
     id
     name
     email
@@ -130,9 +126,9 @@ mutation {
   }
 }
 
-# Aggiornare un utente
+# Update a user
 mutation {
-  updateUser(id: "1", name: "Nome Aggiornato") {
+  updateUser(id: "1", name: "Updated Name") {
     id
     name
     email
@@ -140,35 +136,36 @@ mutation {
   }
 }
 
-# Eliminare un utente
+# Delete a user
 mutation {
   deleteUser(id: "1")
 }
 ```
 
-## Struttura del progetto
+## Project Structure
 
 ```
 .
-├── server.js                 # Server con schema manuale
-├── server-autodiscovery.js   # Server con auto-discovery (NUOVO!)
-├── schema.js                 # Schema GraphQL manuale
-├── resolvers.js              # Resolver GraphQL manuali
-├── autodiscovery.js          # Sistema di auto-discovery (NUOVO!)
-├── database.js               # Configurazione database
-├── init.sql                  # Script di inizializzazione database
-├── Dockerfile                # Configurazione Docker (NUOVO!)
-├── .dockerignore             # File da escludere da Docker (NUOVO!)
-├── docker-compose.full.yml   # Stack completo Docker (NUOVO!)
-├── .env                      # Variabili d'ambiente
-├── .gitignore               # File da ignorare in Git
-├── package.json             # Dipendenze e script
-└── README.md                # Documentazione
+├── server.js                 # Manual schema server
+├── server-autodiscovery.js   # Auto-discovery server (NEW!)
+├── schema.js                 # Manual GraphQL schema
+├── resolvers.js              # Manual GraphQL resolvers
+├── autodiscovery.js          # Auto-discovery system (NEW!)
+├── database.js               # Database configuration
+├── init.sql                  # Database initialization script
+├── Dockerfile                # Docker configuration (NEW!)
+├── .dockerignore             # Files to exclude from Docker (NEW!)
+├── docker-compose.full.yml   # Complete Docker stack (NEW!)
+├── .env                      # Environment variables
+├── .env.example              # Environment variables template (NEW!)
+├── .gitignore               # Files to ignore in Git
+├── package.json             # Dependencies and scripts
+└── README.md                # Documentation
 ```
 
-## Configurazione ambiente
+## Environment Configuration
 
-Il file `.env` contiene le configurazioni del database e del server. Modifica questi valori se necessario:
+The `.env` file contains database and server configurations. Copy `.env.example` to `.env` and modify these values as needed:
 
 ```
 DB_HOST=localhost
